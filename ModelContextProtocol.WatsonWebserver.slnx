@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ModelContextProtocol.WatsonWebserver/ModelContextProtocol.WatsonWebserver.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ModelContextProtocol.WatsonWebserver.Tests/ModelContextProtocol.WatsonWebserver.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,107 @@
+name: Publish to NuGet
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-alpha'
+      - 'v[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-beta'
+      - 'v[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-preview'
+      - 'v[0-9]+.[0-9]+.[0-9]+-preview.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc'
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build_and_publish:
+    environment: Production
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      # VERSION = "1.2.3" or "1.2.3-alpha.1" (no leading v); a suffix marks a pre-release.
+      - name: Resolve version from tag
+        id: ver
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if [[ "$VERSION" == *-* ]]; then
+            IS_PRERELEASE=true
+          else
+            IS_PRERELEASE=false
+          fi
+          echo "value=$VERSION"               >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=$IS_PRERELEASE"  >> "$GITHUB_OUTPUT"
+
+      - name: Restore dependencies
+        run: dotnet restore ModelContextProtocol.WatsonWebserver.slnx
+
+      - name: Set VERSION env var
+        run: echo "VERSION=${{ steps.ver.outputs.value }}" >> "$GITHUB_ENV"
+
+      # -p:Version is passed only on a tag, so the .nupkg carries the released version; on main and
+      # on pull requests the version in the .csproj is used.
+      - name: Build
+        run: |
+          dotnet build src/ModelContextProtocol.WatsonWebserver/ModelContextProtocol.WatsonWebserver.csproj --no-restore --configuration Release \
+            ${VERSION:+-p:Version=$VERSION}
+
+      - name: Build tests
+        run: dotnet build tests/ModelContextProtocol.WatsonWebserver.Tests/ModelContextProtocol.WatsonWebserver.Tests.csproj --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test tests/ModelContextProtocol.WatsonWebserver.Tests/ModelContextProtocol.WatsonWebserver.Tests.csproj --no-build --configuration Release
+
+      - name: Pack
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          dotnet pack src/ModelContextProtocol.WatsonWebserver/ModelContextProtocol.WatsonWebserver.csproj \
+            --no-build --configuration Release --output ./packages -p:Version=${{ steps.ver.outputs.value }}
+
+      - name: Publish to NuGet
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: dotnet nuget push "./packages/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json
+
+      - name: Extract release notes
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${{ steps.ver.outputs.value }}"
+          awk -v ver="$VERSION" '
+            BEGIN { p=0 }
+            $0 ~ "^<a name=\"" ver "\">" { p=1; next }
+            p==1 && /^<a name=/ { p=0 }
+            p==1 { print }
+          ' CHANGELOG.md > RELEASE_NOTES.md
+
+      - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./packages/*.nupkg
+          prerelease: ${{ steps.ver.outputs.is_prerelease == 'true' }}
+          body_path: RELEASE_NOTES.md
