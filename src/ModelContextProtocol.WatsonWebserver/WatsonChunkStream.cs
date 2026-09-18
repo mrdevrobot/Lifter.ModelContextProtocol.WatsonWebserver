@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using global::WatsonWebserver.Core;
 
 namespace ModelContextProtocol.WatsonWebserver;
@@ -5,6 +6,7 @@ namespace ModelContextProtocol.WatsonWebserver;
 /// <summary>
 /// A write-only stream over a Watson response body. The first write starts the response, so a
 /// handler that ends up writing nothing can still choose a status code and send an empty body.
+/// Writing after the stream has been disposed throws <see cref="ObjectDisposedException"/>.
 /// </summary>
 internal sealed class WatsonChunkStream : Stream
 {
@@ -13,6 +15,7 @@ internal sealed class WatsonChunkStream : Stream
     private readonly SemaphoreSlim _gate = new(1, 1);
     private bool _started;
     private bool _finished;
+    private volatile bool _disposed;
 
     internal WatsonChunkStream(HttpContextBase context, Action onFirstWrite)
     {
@@ -35,6 +38,8 @@ internal sealed class WatsonChunkStream : Stream
 
     public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
         if (buffer.IsEmpty)
         {
             return;
@@ -54,7 +59,7 @@ internal sealed class WatsonChunkStream : Stream
                 _onFirstWrite();
             }
 
-            await _context.Response.SendChunk(buffer.ToArray(), false, cancellationToken).ConfigureAwait(false);
+            await _context.Response.SendChunk(AsChunk(buffer), false, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -80,9 +85,26 @@ internal sealed class WatsonChunkStream : Stream
 
     public override void SetLength(long value) => throw new NotSupportedException();
 
-    /// <summary>Closes the chunked body when anything was written to it.</summary>
+    /// <summary>
+    /// Watson only sends a chunk from a <see cref="byte"/> array, so a buffer that is not already
+    /// one whole array is copied into one.
+    /// </summary>
+    private static byte[] AsChunk(ReadOnlyMemory<byte> buffer) =>
+        MemoryMarshal.TryGetArray(buffer, out var segment) &&
+        segment.Array is { } array &&
+        segment.Offset == 0 &&
+        segment.Count == array.Length
+            ? array
+            : buffer.ToArray();
+
+    /// <summary>Closes the chunked body when anything was written to it. A no-op once disposed.</summary>
     internal async Task CompleteAsync()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         await _gate.WaitAsync().ConfigureAwait(false);
         try
         {
@@ -102,8 +124,9 @@ internal sealed class WatsonChunkStream : Stream
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
+        if (disposing && !_disposed)
         {
+            _disposed = true;
             _gate.Dispose();
         }
 

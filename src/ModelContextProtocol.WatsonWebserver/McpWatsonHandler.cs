@@ -31,6 +31,9 @@ internal sealed class McpWatsonHandler : IAsyncDisposable
     private readonly McpWatsonOptions _options;
     private readonly McpWatsonSessionManager _sessions;
     private readonly ILoggerFactory? _loggerFactory;
+    private readonly ILogger? _logger;
+
+    private const string SessionLoggerCategory = "ModelContextProtocol.WatsonWebserver.McpWatsonSession";
 
     private static ReadOnlyMemory<byte> SseComment => ": mcp\n\n"u8.ToArray();
 
@@ -39,6 +42,7 @@ internal sealed class McpWatsonHandler : IAsyncDisposable
         _serverOptions = serverOptions;
         _options = options;
         _loggerFactory = options.LoggerFactory;
+        _logger = options.LoggerFactory?.CreateLogger(SessionLoggerCategory);
         _sessions = new McpWatsonSessionManager(options.IdleTimeout, options.IdleSweepInterval);
     }
 
@@ -94,6 +98,7 @@ internal sealed class McpWatsonHandler : IAsyncDisposable
         }
 
         var stateless = _options.Stateless;
+        var reference = stateless ? null : session.AcquireReference();
         var stream = new WatsonChunkStream(context, () => StartEventStream(context));
         var previous = McpWatsonRequestContext.Current;
         McpWatsonRequestContext.SetCurrent(new McpWatsonRequestContext(context, stateless ? null : session.Id));
@@ -117,10 +122,15 @@ internal sealed class McpWatsonHandler : IAsyncDisposable
         catch (OperationCanceledException)
         {
         }
+        catch (IOException)
+        {
+            // The client went away before the response was written; that ends the exchange.
+        }
         finally
         {
             McpWatsonRequestContext.SetCurrent(previous);
             await stream.DisposeAsync().ConfigureAwait(false);
+            reference?.Dispose();
 
             if (stateless)
             {
@@ -177,6 +187,7 @@ internal sealed class McpWatsonHandler : IAsyncDisposable
             return;
         }
 
+        using var reference = session.AcquireReference();
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(context.Token, session.SessionClosed);
         var stream = new WatsonChunkStream(context, () => StartEventStream(context));
 
@@ -330,33 +341,57 @@ internal sealed class McpWatsonHandler : IAsyncDisposable
             context.Response.Headers[SessionIdHeader] = sessionId;
         }
 
-        var serverOptions = _serverOptions;
-        if (_options.ConfigureSession is { } configure)
+        McpServer? server = null;
+        try
         {
-            serverOptions = CloneServerOptions(_serverOptions);
-            await configure(context, serverOptions, context.Token).ConfigureAwait(false);
+            var serverOptions = _serverOptions;
+            if (_options.ConfigureSession is { } configure)
+            {
+                serverOptions = CloneServerOptions(_serverOptions);
+                await configure(context, serverOptions, context.Token).ConfigureAwait(false);
+            }
+
+            server = McpServer.Create(transport, serverOptions, _loggerFactory, _options.Services);
+            var session = new McpWatsonSession(sessionId, transport, server, _logger);
+            session.ServerRunTask = RunServerAsync(server, session.SessionClosed, stateless ? "(stateless)" : sessionId, _logger);
+
+            if (!stateless)
+            {
+                _sessions.Add(session);
+            }
+
+            return session;
         }
-
-        var server = McpServer.Create(transport, serverOptions, _loggerFactory, _options.Services);
-        var session = new McpWatsonSession(sessionId, transport, server);
-        session.ServerRunTask = RunServerAsync(server, session.SessionClosed);
-
-        if (!stateless)
+        catch
         {
-            _sessions.Add(session);
-        }
+            // Nothing owns the transport or the server until the session exists, so a failure here
+            // has to hand both back itself.
+            if (server is not null)
+            {
+                await server.DisposeAsync().ConfigureAwait(false);
+            }
 
-        return session;
+            await transport.DisposeAsync().ConfigureAwait(false);
+            throw;
+        }
     }
 
-    private static async Task RunServerAsync(McpServer server, CancellationToken sessionClosed)
+    private static async Task RunServerAsync(
+        McpServer server,
+        CancellationToken sessionClosed,
+        string sessionId,
+        ILogger? logger)
     {
         try
         {
             await server.RunAsync(sessionClosed).ConfigureAwait(false);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (sessionClosed.IsCancellationRequested)
         {
+        }
+        catch (Exception exception)
+        {
+            logger?.LogError(exception, "The MCP server of session {SessionId} stopped with an error.", sessionId);
         }
     }
 
