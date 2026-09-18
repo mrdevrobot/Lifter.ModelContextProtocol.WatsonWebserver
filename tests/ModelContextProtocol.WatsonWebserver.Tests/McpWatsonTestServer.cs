@@ -28,6 +28,17 @@ internal sealed class McpWatsonTestServer : IAsyncDisposable
 
     internal int ActiveSessionCount => _endpoint.ActiveSessionCount;
 
+    /// <summary>Exceptions Watson caught out of a route handler; a healthy run leaves this empty.</summary>
+    internal List<Exception> Failures { get; private init; } = new();
+
+    internal Exception[] CapturedFailures()
+    {
+        lock (Failures)
+        {
+            return Failures.ToArray();
+        }
+    }
+
     internal static McpWatsonTestServer Start(Action<McpWatsonOptions>? configure = null)
     {
         var serverOptions = new McpServerOptions
@@ -40,9 +51,14 @@ internal sealed class McpWatsonTestServer : IAsyncDisposable
 
         var port = FreePort();
         var webserver = new Webserver(new WebserverSettings("127.0.0.1", port), DefaultRouteAsync);
+        var failures = new List<Exception>();
         webserver.Routes.Exception = (context, exception) =>
         {
-            Console.Error.WriteLine(exception);
+            lock (failures)
+            {
+                failures.Add(exception);
+            }
+
             context.Response.StatusCode = 500;
             return context.Response.Send(exception.ToString(), context.Token);
         };
@@ -50,7 +66,7 @@ internal sealed class McpWatsonTestServer : IAsyncDisposable
         var endpoint = webserver.MapMcp(serverOptions, configure);
         webserver.Start();
 
-        return new McpWatsonTestServer(webserver, endpoint, serverOptions, port);
+        return new McpWatsonTestServer(webserver, endpoint, serverOptions, port) { Failures = failures };
     }
 
     internal Task<McpClient> ConnectAsync(IDictionary<string, string>? headers = null, bool standaloneGetStream = false)

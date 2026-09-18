@@ -269,6 +269,53 @@ public class StreamableHttpEndpointTests
         await received.Task.WaitAsync(TimeSpan.FromSeconds(1));
     }
 
+    [Fact]
+    public async Task Ending_a_session_closes_a_stream_that_is_still_open()
+    {
+        await using var server = McpWatsonTestServer.Start();
+        await using var client = await server.ConnectAsync();
+        var sessionId = client.SessionId!;
+
+        using var http = server.CreateHttpClient();
+
+        using var get = new HttpRequestMessage(HttpMethod.Get, server.Uri);
+        get.Headers.Add("Mcp-Session-Id", sessionId);
+        get.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
+
+        using var opened = await http.SendAsync(get, HttpCompletionOption.ResponseHeadersRead);
+        Assert.Equal(HttpStatusCode.OK, opened.StatusCode);
+
+        await using var stream = await opened.Content.ReadAsStreamAsync();
+        var buffer = new byte[64];
+
+        // The endpoint writes a comment as soon as the stream is up, so this returns once it is.
+        Assert.True(await stream.ReadAsync(buffer).AsTask().WaitAsync(Timeout) > 0);
+
+        using var delete = new HttpRequestMessage(HttpMethod.Delete, server.Uri);
+        delete.Headers.Add("Mcp-Session-Id", sessionId);
+        using var deleted = await http.SendAsync(delete);
+        Assert.Equal(HttpStatusCode.NoContent, deleted.StatusCode);
+
+        // The stream ends because the session was closed, not because the socket broke.
+        var read = await ReadToEndAsync(stream, buffer).WaitAsync(Timeout);
+
+        Assert.Equal(0, read);
+        Assert.Equal(0, server.ActiveSessionCount);
+        Assert.Empty(server.CapturedFailures());
+    }
+
+    private static async Task<int> ReadToEndAsync(Stream stream, byte[] buffer)
+    {
+        int read;
+        do
+        {
+            read = await stream.ReadAsync(buffer);
+        }
+        while (read > 0);
+
+        return read;
+    }
+
     private static Task<HttpResponseMessage> PostAsync(HttpClient http, Uri uri, string body, string? sessionId)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, uri)
