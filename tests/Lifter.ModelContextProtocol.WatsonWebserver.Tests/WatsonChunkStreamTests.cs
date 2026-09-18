@@ -1,7 +1,8 @@
+using ModelContextProtocol;
 using global::WatsonWebserver.Core;
 using Xunit;
 
-namespace ModelContextProtocol.WatsonWebserver.Tests;
+namespace Lifter.ModelContextProtocol.WatsonWebserver.Tests;
 
 public class WatsonChunkStreamTests
 {

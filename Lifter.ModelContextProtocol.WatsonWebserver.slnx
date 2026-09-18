@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Lifter.ModelContextProtocol.WatsonWebserver/Lifter.ModelContextProtocol.WatsonWebserver.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/McpWatsonSample/McpWatsonSample.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Lifter.ModelContextProtocol.WatsonWebserver.Tests/Lifter.ModelContextProtocol.WatsonWebserver.Tests.csproj" />
+  </Folder>
+</Solution>

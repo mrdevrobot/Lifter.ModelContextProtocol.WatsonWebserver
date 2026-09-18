@@ -60,7 +60,7 @@ jobs:
           echo "is_prerelease=$IS_PRERELEASE"  >> "$GITHUB_OUTPUT"
 
       - name: Restore dependencies
-        run: dotnet restore ModelContextProtocol.WatsonWebserver.slnx
+        run: dotnet restore Lifter.ModelContextProtocol.WatsonWebserver.slnx
 
       - name: Set VERSION env var
         run: echo "VERSION=${{ steps.ver.outputs.value }}" >> "$GITHUB_ENV"
@@ -69,19 +69,19 @@ jobs:
       # on pull requests the version in the .csproj is used.
       - name: Build
         run: |
-          dotnet build src/ModelContextProtocol.WatsonWebserver/ModelContextProtocol.WatsonWebserver.csproj --no-restore --configuration Release \
+          dotnet build src/Lifter.ModelContextProtocol.WatsonWebserver/Lifter.ModelContextProtocol.WatsonWebserver.csproj --no-restore --configuration Release \
             ${VERSION:+-p:Version=$VERSION}
 
       - name: Build tests
-        run: dotnet build tests/ModelContextProtocol.WatsonWebserver.Tests/ModelContextProtocol.WatsonWebserver.Tests.csproj --no-restore --configuration Release
+        run: dotnet build tests/Lifter.ModelContextProtocol.WatsonWebserver.Tests/Lifter.ModelContextProtocol.WatsonWebserver.Tests.csproj --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test tests/ModelContextProtocol.WatsonWebserver.Tests/ModelContextProtocol.WatsonWebserver.Tests.csproj --no-build --configuration Release
+        run: dotnet test tests/Lifter.ModelContextProtocol.WatsonWebserver.Tests/Lifter.ModelContextProtocol.WatsonWebserver.Tests.csproj --no-build --configuration Release
 
       - name: Pack
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          dotnet pack src/ModelContextProtocol.WatsonWebserver/ModelContextProtocol.WatsonWebserver.csproj \
+          dotnet pack src/Lifter.ModelContextProtocol.WatsonWebserver/Lifter.ModelContextProtocol.WatsonWebserver.csproj \
             --no-build --configuration Release --output ./packages -p:Version=${{ steps.ver.outputs.value }}
 
       - name: NuGet login (OIDC)

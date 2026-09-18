@@ -1,7 +1,8 @@
+using ModelContextProtocol;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 
-namespace ModelContextProtocol.WatsonWebserver;
+namespace Lifter.ModelContextProtocol.WatsonWebserver;
 
 /// <summary>
 /// One MCP session: the transport the HTTP requests are fed to, the server running on it, and the

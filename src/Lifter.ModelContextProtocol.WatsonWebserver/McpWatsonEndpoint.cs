@@ -1,4 +1,5 @@
-namespace ModelContextProtocol.WatsonWebserver;
+using ModelContextProtocol;
+namespace Lifter.ModelContextProtocol.WatsonWebserver;
 
 /// <summary>
 /// The MCP endpoint mounted on a Watson server. Disposing it ends every live session; the routes

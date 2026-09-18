@@ -1,4 +1,4 @@
-# ModelContextProtocol.WatsonWebserver — Claude Code guide
+# Lifter.ModelContextProtocol.WatsonWebserver — Claude Code guide
 
 Single NuGet package: the Streamable HTTP transport of the official MCP C# SDK, hosted on
 WatsonWebserver instead of ASP.NET Core. `src/` is the package, `tests/` drives it through the

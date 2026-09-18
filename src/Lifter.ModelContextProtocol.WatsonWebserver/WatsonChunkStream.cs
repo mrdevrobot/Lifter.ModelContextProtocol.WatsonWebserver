@@ -1,7 +1,8 @@
+using ModelContextProtocol;
 using System.Runtime.InteropServices;
 using global::WatsonWebserver.Core;
 
-namespace ModelContextProtocol.WatsonWebserver;
+namespace Lifter.ModelContextProtocol.WatsonWebserver;
 
 /// <summary>
 /// A write-only stream over a Watson response body. The first write starts the response, so a

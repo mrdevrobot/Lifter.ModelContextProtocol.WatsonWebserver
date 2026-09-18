@@ -1,7 +1,8 @@
-using ModelContextProtocol.WatsonWebserver;
+using ModelContextProtocol;
+using Lifter.ModelContextProtocol.WatsonWebserver;
 using Xunit;
 
-namespace ModelContextProtocol.WatsonWebserver.Tests;
+namespace Lifter.ModelContextProtocol.WatsonWebserver.Tests;
 
 public class OptionsTests
 {

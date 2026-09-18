@@ -1,8 +1,9 @@
+using ModelContextProtocol;
 using global::WatsonWebserver.Core;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Server;
 
-namespace ModelContextProtocol.WatsonWebserver;
+namespace Lifter.ModelContextProtocol.WatsonWebserver;
 
 /// <summary>
 /// How the MCP endpoint is mounted on a Watson server.

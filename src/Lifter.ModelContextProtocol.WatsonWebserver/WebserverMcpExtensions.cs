@@ -1,9 +1,10 @@
+using ModelContextProtocol;
 using global::WatsonWebserver.Core;
 using global::WatsonWebserver.Core.Routing;
 using ModelContextProtocol.Server;
 using HttpMethod = global::WatsonWebserver.Core.HttpMethod;
 
-namespace ModelContextProtocol.WatsonWebserver;
+namespace Lifter.ModelContextProtocol.WatsonWebserver;
 
 /// <summary>Mounts an MCP server on a Watson route.</summary>
 public static class WebserverMcpExtensions

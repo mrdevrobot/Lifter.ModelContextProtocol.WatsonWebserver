@@ -1,7 +1,8 @@
+using ModelContextProtocol;
 using System.ComponentModel;
 using ModelContextProtocol.Server;
 
-namespace ModelContextProtocol.WatsonWebserver.Tests;
+namespace Lifter.ModelContextProtocol.WatsonWebserver.Tests;
 
 [McpServerToolType]
 public sealed class TestTools

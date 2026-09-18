@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ModelContextProtocol.WatsonWebserver\ModelContextProtocol.WatsonWebserver.csproj" />
+    <ProjectReference Include="..\..\src\Lifter.ModelContextProtocol.WatsonWebserver\Lifter.ModelContextProtocol.WatsonWebserver.csproj" />
   </ItemGroup>
 
 </Project>

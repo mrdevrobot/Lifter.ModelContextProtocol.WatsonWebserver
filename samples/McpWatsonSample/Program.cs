@@ -1,7 +1,8 @@
+using ModelContextProtocol;
 using System.ComponentModel;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using ModelContextProtocol.WatsonWebserver;
+using Lifter.ModelContextProtocol.WatsonWebserver;
 using WatsonWebserver;
 using WatsonWebserver.Core;
 using HttpMethod = WatsonWebserver.Core.HttpMethod;

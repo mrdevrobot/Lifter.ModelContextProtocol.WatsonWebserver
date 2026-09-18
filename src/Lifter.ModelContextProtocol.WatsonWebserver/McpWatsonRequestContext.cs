@@ -1,6 +1,7 @@
+using ModelContextProtocol;
 using global::WatsonWebserver.Core;
 
-namespace ModelContextProtocol.WatsonWebserver;
+namespace Lifter.ModelContextProtocol.WatsonWebserver;
 
 /// <summary>
 /// The Watson request a tool, prompt or resource handler is currently running for.

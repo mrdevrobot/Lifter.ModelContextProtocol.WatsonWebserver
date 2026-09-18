@@ -1,8 +1,8 @@
-# 🔌 ModelContextProtocol.WatsonWebserver
+# 🔌 Lifter.ModelContextProtocol.WatsonWebserver
 ### Streamable HTTP transport for the official MCP C# SDK, hosted on WatsonWebserver
 
-[![NuGet](https://img.shields.io/nuget/v/ModelContextProtocol.WatsonWebserver?label=nuget&color=red)](https://www.nuget.org/packages/ModelContextProtocol.WatsonWebserver)
-[![NuGet Downloads](https://img.shields.io/nuget/dt/ModelContextProtocol.WatsonWebserver?label=downloads)](https://www.nuget.org/packages/ModelContextProtocol.WatsonWebserver)
+[![NuGet](https://img.shields.io/nuget/v/Lifter.ModelContextProtocol.WatsonWebserver?label=nuget&color=red)](https://www.nuget.org/packages/Lifter.ModelContextProtocol.WatsonWebserver)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/Lifter.ModelContextProtocol.WatsonWebserver?label=downloads)](https://www.nuget.org/packages/Lifter.ModelContextProtocol.WatsonWebserver)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Platform](https://img.shields.io/badge/platform-.NET%208%20%7C%209%20%7C%2010-purple)
 ![AOT](https://img.shields.io/badge/AOT-compatible-brightgreen)
@@ -42,7 +42,7 @@ client cannot tell the difference between a server hosted here and one hosted on
 ## 📦 Install
 
 ```bash
-dotnet add package ModelContextProtocol.WatsonWebserver
+dotnet add package Lifter.ModelContextProtocol.WatsonWebserver
 ```
 
 ---
@@ -53,7 +53,7 @@ dotnet add package ModelContextProtocol.WatsonWebserver
 using System.ComponentModel;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
-using ModelContextProtocol.WatsonWebserver;
+using Lifter.ModelContextProtocol.WatsonWebserver;
 using WatsonWebserver;
 using WatsonWebserver.Core;
 

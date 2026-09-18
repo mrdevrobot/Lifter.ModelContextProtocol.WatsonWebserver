@@ -1,6 +1,7 @@
+using ModelContextProtocol;
 using System.Collections.Concurrent;
 
-namespace ModelContextProtocol.WatsonWebserver;
+namespace Lifter.ModelContextProtocol.WatsonWebserver;
 
 /// <summary>Keeps the live sessions and disposes the ones that went quiet.</summary>
 internal sealed class McpWatsonSessionManager : IAsyncDisposable

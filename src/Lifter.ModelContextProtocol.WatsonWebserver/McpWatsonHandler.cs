@@ -1,3 +1,4 @@
+using ModelContextProtocol;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
-namespace ModelContextProtocol.WatsonWebserver;
+namespace Lifter.ModelContextProtocol.WatsonWebserver;
 
 /// <summary>
 /// Turns Watson requests into calls on the SDK's Streamable HTTP transport: the whole package, once
@@ -33,7 +34,7 @@ internal sealed class McpWatsonHandler : IAsyncDisposable
     private readonly ILoggerFactory? _loggerFactory;
     private readonly ILogger? _logger;
 
-    private const string SessionLoggerCategory = "ModelContextProtocol.WatsonWebserver.McpWatsonSession";
+    private const string SessionLoggerCategory = "Lifter.ModelContextProtocol.WatsonWebserver.McpWatsonSession";
 
     private static ReadOnlyMemory<byte> SseComment => ": mcp\n\n"u8.ToArray();
 

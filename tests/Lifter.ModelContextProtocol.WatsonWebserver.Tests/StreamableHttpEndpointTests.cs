@@ -1,10 +1,11 @@
+using ModelContextProtocol;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using ModelContextProtocol.Protocol;
 using Xunit;
 
-namespace ModelContextProtocol.WatsonWebserver.Tests;
+namespace Lifter.ModelContextProtocol.WatsonWebserver.Tests;
 
 public class StreamableHttpEndpointTests
 {
@@ -259,9 +260,9 @@ public class StreamableHttpEndpointTests
         using var deadline = new CancellationTokenSource(Timeout);
         for (var attempt = 0; !received.Task.IsCompleted && !deadline.IsCancellationRequested; attempt++)
         {
-            server.ServerOptions.ToolCollection!.Add(Server.McpServerTool.Create(
+            server.ServerOptions.ToolCollection!.Add(global::ModelContextProtocol.Server.McpServerTool.Create(
                 () => "late",
-                new Server.McpServerToolCreateOptions { Name = $"late_tool_{attempt}" }));
+                new global::ModelContextProtocol.Server.McpServerToolCreateOptions { Name = $"late_tool_{attempt}" }));
 
             await Task.WhenAny(received.Task, Task.Delay(TimeSpan.FromMilliseconds(250)));
         }

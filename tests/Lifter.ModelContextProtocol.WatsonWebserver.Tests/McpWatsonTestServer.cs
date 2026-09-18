@@ -1,3 +1,4 @@
+using ModelContextProtocol;
 using System.Net;
 using System.Net.Sockets;
 using global::WatsonWebserver;
@@ -6,7 +7,7 @@ using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
-namespace ModelContextProtocol.WatsonWebserver.Tests;
+namespace Lifter.ModelContextProtocol.WatsonWebserver.Tests;
 
 /// <summary>A real Watson listener on a free loopback port with an MCP endpoint mounted on it.</summary>
 internal sealed class McpWatsonTestServer : IAsyncDisposable

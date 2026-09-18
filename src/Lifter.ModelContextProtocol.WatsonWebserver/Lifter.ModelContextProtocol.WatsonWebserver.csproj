@@ -9,12 +9,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsAotCompatible Condition="'$(TargetFramework)' != 'net8.0'">true</IsAotCompatible>
 
-    <PackageId>ModelContextProtocol.WatsonWebserver</PackageId>
+    <PackageId>Lifter.ModelContextProtocol.WatsonWebserver</PackageId>
     <Version>0.1.0</Version>
     <Authors>Luca Fabbri</Authors>
     <Description>Streamable HTTP transport for the official Model Context Protocol C# SDK on WatsonWebserver: host an MCP server on any Watson route, without ASP.NET Core.</Description>
-    <RepositoryUrl>https://github.com/mrdevrobot/ModelContextProtocol.WatsonWebserver</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/mrdevrobot/ModelContextProtocol.WatsonWebserver</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mrdevrobot/Lifter.ModelContextProtocol.WatsonWebserver</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/mrdevrobot/Lifter.ModelContextProtocol.WatsonWebserver</PackageProjectUrl>
     <PackageTags>mcp;model-context-protocol;watson;watsonwebserver;streamable-http;sse;json-rpc;llm;agents;lucafabbri</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -32,7 +32,7 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>ModelContextProtocol.WatsonWebserver.Tests</_Parameter1>
+      <_Parameter1>Lifter.ModelContextProtocol.WatsonWebserver.Tests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 
